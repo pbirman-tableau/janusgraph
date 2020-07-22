@@ -328,7 +328,13 @@ public class KCVSLog implements Log, BackendOperation.TransactionalProvider {
 
     private int getTimeSlice(Instant timestamp) {
         long value = times.getTime(timestamp) / TIMESLICE_INTERVAL;
-        if (value>Integer.MAX_VALUE || value<0) throw new IllegalArgumentException("Timestamp overflow detected: " + timestamp);
+        // interval assumes Micros as the unit so account for Nanos
+        if (times.getUnit().getDuration().toNanos() == 1) {
+            value = value / 1000;
+        }
+        if (value>Integer.MAX_VALUE || value<0) {
+            throw new IllegalArgumentException("Timestamp overflow detected: " + timestamp);
+        }
         return (int)value;
     }
 
